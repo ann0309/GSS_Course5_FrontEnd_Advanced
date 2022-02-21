@@ -1,1 +1,1 @@
-# GSS_Course5修正
+# GSS_Course5
