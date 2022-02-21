@@ -1,0 +1,143 @@
+﻿
+
+<h2>新增書籍</h2>
+<div id="addBookForm" class="form-horizontal">
+    <div class="form-group">
+        <label>書名</label>
+        <input id="book_name" type="text" class="k-textbox" style="width: 20%;" name="BookName" required />
+    </div>
+    <div class="form-group">
+        <label>作者</label>
+        <input id="book_author" type="text" class="k-textbox" style="width: 20%;" name="BookAuthor" required />
+    </div>
+    <div class="form-group">
+        <label>出版商</label>
+        <input id="book_publisher" type="text" class="k-textbox" style="width: 20%;" name="BookPublisher" required />
+    </div>
+    <div class="form-group">
+        <label>內容簡介</label>
+        <input id="book_content" type="text" class="k-textbox" style="width: 20%;" name="BookContent" />
+    </div>
+    <div class="form-group">
+        <label>購書日期</label>
+        <input id="book_bought_date" type="text" class="k-textbox" style="width: 20%;" name="BookBoughtDate" required />
+    </div>
+    <div class="form-group">
+        <label>圖書類別</label>
+        <input id="book_category_id" style="width: 20%; " required type="text" class="k-textbox">
+    </div>
+    <button type="button" id="saveInsert">存檔</button>
+</div>
+
+
+
+<script>
+    $(document).ready(function () {
+        $("#book_bought_date").kendoDatePicker({
+            max: new Date(),
+            dateInput: true,
+            format: "yyyy-MM-dd",
+            value: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+
+        });
+        $("#book_category_id").kendoDropDownList({
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "/Book/GetCategoryData",
+                        dataType: "json",
+                        type: "post"
+                    }
+                }
+            },
+            index: 0,
+            optionLabel: "請選擇..."
+
+        });
+        $("#book_keeper").kendoDropDownList({
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "/Book/GetKeeperData",
+                        dataType: "json",
+                        type: "post"
+                    }
+                }
+            },
+            index: 0,
+            optionLabel: "請選擇...",
+        });
+        $("#book_status").kendoDropDownList({
+            dataTextField: "Text",
+            dataValueField: "Value",
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "/Book/GetStatusData",
+                        dataType: "json",
+                        type: "post"
+                    }
+                }
+            },
+            index: 0,
+            optionLabel: "請選擇...",
+            
+        });
+        $("#saveInsert").click(function () {
+            var validator = $("#addBookForm").kendoValidator({
+                rules: {
+                    date1: function (input) {
+                        if (input.is("[name=BookBoughtDate]") && kendo.parseDate(input.val()) > new Date()) {
+                            return false;  //通過
+                        }
+                        return true;
+                    },
+                    date2: function (input) {//判斷是不是數字
+                        if (input.is("[name=BookBoughtDate]") && isNaN(Date.parse($("#book_bought_date").data("kendoDatePicker").value()))) {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    },
+                },
+                messages: {
+                    required: "必填",
+                    date1: "未來日期無效",
+                    date2: "請輸入正確日期",
+                }
+            }).data("kendoValidator");
+            if (validator.validate()) {
+                var userInput = {
+                    BookName: $("#book_name").val(),
+                    BookAuthor: $("#book_author").val(),
+                    BookPublisher: $("#book_publisher").val(),
+                    BookContent: $("#book_content").val(),
+                    BookBoughtDate: $("#book_bought_date").val(),//要用js的取值方式
+                    BookCategoryID: $("#book_category_id").val()
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/Book/Insert",
+                    data: userInput,
+                    dataType: "json",
+                    success: function (response) {
+                        alert("新增成功");
+                        window.location.href = "/Book/Index"
+                    }, error: function (error) {
+                        alert("系統發生錯誤");
+                    }
+                });
+            } else {
+              
+            }
+                
+
+            
+        });
+    });
+
+</script>

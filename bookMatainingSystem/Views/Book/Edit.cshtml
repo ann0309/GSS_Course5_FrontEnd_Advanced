@@ -1,0 +1,188 @@
+﻿<h1>編輯</h1>
+
+<div class="form-horizontal">
+    <div class="form-group">
+        <label>書名</label>
+        <input id="book_name" type="text" class="k-textbox" style="width: 20%;" name="BookName" />
+    </div>
+    <div class="form-group">
+        <label>作者</label>
+        <input id="book_author" type="text" class="k-textbox" style="width: 20%;" name="BookAuthor" />
+    </div>
+    <div class="form-group">
+        <label>出版商</label>
+        <input id="book_publisher" type="text" class="k-textbox" style="width: 20%;" name="BookPublisher" />
+    </div>
+    <div class="form-group">
+        <label>購書日期</label>
+        <input id="bought_datepicker" type="text" class="k-textbox" style="width: 20%;" name="BookBoughtDate" />
+    </div>
+    <div class="form-group">
+        <label>圖書類別</label>
+        <input id="book_category_id" style="width: 20%;" type="text" class="k-textbox" name="BookCategoryID">
+    </div>
+    <div class="form-group">
+        <label>借閱人</label>
+        <input id="book_keeper" style="width: 20%;" />
+    </div>
+    <div class="form-group">
+        <label>借閱狀態</label>
+        <input id="book_status" style="width: 20%;">
+    </div>
+</div>
+
+<div class="form-group">
+
+        <button type="button" class="btn btn-default" id="back_to_list"> back to list</button>
+        <input type="submit" value="刪除" id="deleteBook" class="btn btn-default" />
+        <input type="submit" value="存檔" id="saveEdit" class="btn btn-default" />
+   
+</div>
+
+
+
+
+<script type="text/javascript">
+    var queryString = new URLSearchParams(window.location.search);//取到網址帶的查詢參數
+    var id = queryString.get('id');
+    
+    
+    $("#book_status").kendoDropDownList({
+        dataTextField: "Text",
+        dataValueField: "Value",
+        dataSource: {
+            transport: {
+                read: {
+                    url: "/Book/GetStatusData",
+                    dataType: "json",
+                    type: "post"
+                }
+            }
+        },
+        index: 0,
+        optionLabel: "請選擇...",
+        change: dropDownListValueChange
+    });
+    $("#book_keeper").kendoDropDownList({
+        dataTextField: "Text",
+        dataValueField: "Value",
+        dataSource: {
+            transport: {
+                read: {
+                    url: "/Book/GetKeeperData",
+                    dataType: "json",
+                    type: "post"
+                }
+            }
+        },
+        index: 0,
+        optionLabel: "請選擇...",
+    });
+    $("#bought_datepicker").kendoDatePicker({
+        max: new Date(),
+        dateInput: true,
+        format: "yyyy-MM-dd",
+        value: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+    });
+    $("#back_to_list").click(function (e) {
+        window.location.href = "/Book/Index"
+    });
+    function dropDownListValueChange() {
+        var status = $("#book_status").val();
+        switch (status) {
+            case 'A':
+                $('#book_keeper').val("");
+                $("#book_keeper").data("kendoDropDownList").enable(false);
+                break;
+            case 'B':
+                //required
+                $("#book_keeper").data("kendoDropDownList").enable(true);
+                break;
+            case 'U':
+                $('#book_keeper').val("")
+                $("#book_keeper").data("kendoDropDownList").enable(false);
+                break;
+            case 'C':
+                $("#book_keeper").data("kendoDropDownList").enable(true);
+                $('#book_keeper').attr("required", true);
+                break;
+        }
+    }
+    
+    $(document).ready(function () {        
+            $.ajax({//等畫面畫好再一起賦值
+                type: "POST",
+                url: "/Book/EditIndex",
+                data: "id=" + id,
+                dataType: "json",
+                success: function (response) {             //Controller回傳的一筆資料
+                    console.log(response)
+                    $("#book_name").val(response.BookName)   //取值
+                    $("#book_author").val(response.BookAuthor)
+                    $("#book_publisher").val(response.BookPublisher)
+                    $("#book_content").val(response.BookContent)
+                    $("#book_category_id").data("kendoDropDownList").value(response.BookCategoryID)                    
+                    $("#book_keeper").data("kendoDropDownList").value(response.BookKeeper)
+                    $("#book_status").data("kendoDropDownList").value(response.BookStatus)
+                    dropDownListValueChange();//一開始進入畫面檢查狀態, 和連動借閱人
+                }, error: function (error) {
+                    alert("系統發生錯誤");
+                }
+            });
+
+                
+        $("#deleteBook").click(function () {
+            var status = $("#book_status").val();
+            if (status == "B") {
+                alert("書本已借出，不可刪除資料");
+            }
+            else {
+                if (confirm("是否要刪除此筆資料?")) {
+                    console.log(1);
+                    $.ajax({
+                        type: "POST",
+                        url: "/Book/Delete/",
+                        data: "id=" + id,
+                        dataType: "json",
+                        success: function (response) {
+                            alert("刪除成功");
+                            console.log(2);
+                        }, error: function (error) {
+                            alert("系統發生錯誤");
+                        }
+                    });             
+                }
+                return false;
+            }
+        });
+        $("#saveEdit").click(function () {
+            var userInput = {
+                BookID: id,
+                BookName: $("#book_name").val(),
+                BookAuthor: $("#book_author").val(),
+                BookPublisher: $("#book_publisher").val(),
+                BookContent: $("#book_content").val(),
+                BookBoughtDate: $("#bought_datepicker").val(),//要用js的取值方式
+                BookCategoryID: $("#book_category_id").val(),
+                BookStatus: $("#book_status").val(),
+                BookKeeper: $("#book_keeper").val()
+            }
+            $.ajax({
+                type: "POST",
+                url: "/Book/Edit",
+                data: userInput,
+                dataType: "json",
+                success: function (response) {
+                    alert("編輯成功");
+                    window.location.href = "/Book/Index"
+                }, error: function (error) {
+                    alert("系統發生錯誤");
+                }
+            });
+        });
+        dropDownListValueChange();//點選下拉是選單換書本狀態
+            
+    });
+
+</script>
+

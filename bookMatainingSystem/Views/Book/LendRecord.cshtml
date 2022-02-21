@@ -1,0 +1,53 @@
+﻿<h2>書籍借閱紀錄</h2>
+@*用ajax迴船html的方式*@
+@*//@using (Html.BeginForm())//不用接收資料就不用這行*@
+
+
+<div id="lend_record_grid">
+</div>
+
+<script>
+
+    $(document).ready(function () {
+
+        $("#lend_record_grid").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "/Book/GetLendRecord",
+                        type: "post",
+                        dataType: "json",
+                        data: function () {
+                            var queryString = new URLSearchParams(window.location.search);//取到網址帶的查詢參數
+                            var id = queryString.get('id');
+                            return {
+                                BookID: id,//key要和參數名字相同
+                            }
+                        }
+                    },
+                },
+                pageSize: 8,
+            },
+            height: 300,
+            sortable: true,
+            scrollable: false,
+            pageable: {
+                input: true,
+                numeric: false
+            },
+            columns: [
+                { hidden: true, field: "BookID" },
+                { field: "LendDate", title: "購買日期", width: "15%", template: '#= kendo.toString(kendo.parseDate(LendDate), "yyyy/MM/dd")#' },
+                { field: "UserCname", title: "中文姓名", width: "15%" },
+                { field: "UserEname", title: "英文姓名", width: "15%" },
+                { field: "KeeperId", title: "借閱人編號", width: "15%" },
+            ]
+
+        });
+
+
+    });
+</script>
+
+
+

@@ -1,0 +1,76 @@
+﻿<h2>明細</h2>
+
+<form action="" method="post" id="bookForm">
+    <div class="form-group">
+
+        <label>書名</label>
+        <input id="book_name" name="BookName" type="text" class="k-textbox" style="width: 280px" disabled="true" />
+
+    </div>
+
+    <div class="form-group">
+
+        <label>作者</label>
+        <input id="book_author" type="text" class="k-textbox" style="width: 280px" name="BookAuthor" disabled="true" />
+
+    </div>
+    <div class="form-group">
+        <label>出版商</label>
+        <input id="book_publisher" type="text" class="k-textbox" style="width: 280px" name="BookPublisher" disabled="true" />
+    </div>
+    <div class="form-group">
+        <label>內容簡介</label>
+        <textarea id="book_content" type="text" class="k-textbox" style="width:280px;height:50px;" name="BookContent" disabled="true" /></textarea>
+    </div>
+    <div class="form-group">
+        <label>購書日期</label>
+        <input id="detail_bought_date" type="text" class="k-textbox" style="width: 280px" name="BookBoughtDate" disabled="true" />
+    </div>
+
+    <div class="form-group">
+        <label>圖書類別</label>
+        <input id="detail_book_category_id" type="text" class="k-textbox" style="width: 280px" name="BookCategoryID" disabled="true" />
+
+    </div>
+    <div class="form-group">
+        <label>借閱人</label>
+        <input id="detail_book_keeper" type="text" class="k-textbox" style="width: 280px" name="BookKeeper" disabled="true" />
+    </div>
+    <div class="form-group">
+        <label>借閱狀態</label>
+        <input id="detail_book_status" type="text" class="k-textbox" style="width: 280px" name="Status" disabled="true" />
+    </div>
+</form>
+<div class="form-actions no-color">
+    <button type="button" class="btn btn-default" id="back_to_list">back to list</button>
+</div>
+
+
+<script>$("#back_to_list").click(function (e) {
+        window.location.href = "/Book/Index"
+    });
+    $(document).ready(function () {
+        var queryString = new URLSearchParams(window.location.search);//取到網址帶的查詢參數
+        var id = queryString.get('id');
+
+        $.ajax({
+            type: "POST",
+            url: "/Book/GetDetail",
+            data: "id=" + id,//要和link的?後的變數名相同
+            dataType: "json",
+            success: function (response) {
+                console.log(response)
+                $("#book_name").val(response.BookName)
+                $("#book_author").val(response.BookAuthor)
+                $("#book_publisher").val(response.BookPublisher)
+                $("#book_content").val(response.BookContent)
+                $("#detail_bought_date").val(response.BookBoughtDate)
+                $("#detail_book_category_id").val(response.BookCategoryID)
+                $("#detail_book_keeper").val(response.BookKeeper)
+                $("#detail_book_status").val(response.BookStatus)
+            }, error: function (error) {
+
+            }
+
+        });
+    });</script>

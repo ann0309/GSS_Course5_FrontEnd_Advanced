@@ -1,0 +1,99 @@
+﻿<h2>圖書維護</h2>
+
+
+<div class="form-horizontal">
+    <div class="form-group">
+        <label>書名</label>
+        <input id="book_name" type="text" class="k-textbox" style="width: 20%;" name="BookName" />
+    </div>
+    <div class="form-group">
+        <label>圖書類別</label>
+        <input id="book_category_id" style="width: 20%;" type="text" class="k-textbox" name="BookCategoryID">
+    </div>
+    <div class="form-group">
+        <label>借閱人</label>
+        <input id="book_keeper" style="width: 20%;" />
+    </div>
+    <div class="form-group">
+        <label>借閱狀態</label>
+        <input id="book_status" style="width: 20%;">
+    </div>
+    <div class="form-group">
+        <button type="button" id="searchBtn" class="btn btn-default">查詢</button>
+        <button type="button" id="insertBook" class="btn btn-default">新增</button>
+        <button type="button" id="clearInput" class="btn btn-default">清除</button>
+    </div>
+</div>
+
+<div id="book_grid">
+</div>
+
+<script>
+    $("#book_name").kendoAutoComplete({
+        dataSource: {
+            type: "post",
+            transport: {
+                read: {
+                    url: "/Book/GetBookNameData",
+                    type: "post",
+                    dataType: "json",
+                }
+            },
+        },
+        dataTextField: "Text",//資料來源的顯示值
+        filter: "contains",
+    });
+    $("#insertBook").click(function () {
+        window.location.href = "/Book/Insert";
+    });
+    $("#searchBtn").click(function () {
+        $("#book_grid").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "/Book/Search",
+                        type: "post",
+                        dataType: "json",
+                        data: function () {//自訂傳至Action參數
+                            return {
+                                BookName: $("#book_name").val(),
+                                BookCategoryID: $("#book_category_id").data("kendoDropDownList").value(),//ID名
+                                BookStatus: $("#book_status").data("kendoDropDownList").value(),
+                                BookKeeper: $("#book_keeper").data("kendoDropDownList").value(),
+                            }
+                        }
+                    }
+                },
+                pageSize: 8,
+            },
+            height: 550,
+            sortable: true,
+            scrollable: false,
+            pageable: {
+                input: true,
+                numeric: false
+            },
+            columns: [
+                { hidden: true, field: "BookID" },
+                { field: "BookCategoryName", title: "書籍種類", width: "10%" },
+                { field: "BookName", title: "書籍名稱", width: "50%", template: '<a href="/Book/Detail/?id=#=BookID#">#=BookName#</a>', },
+                { field: "BookBoughtDate", title: "購買日期", width: "15%", template: '#= kendo.toString(kendo.parseDate(BookBoughtDate), "yyyy/MM/dd")#' },
+                { field: "BookStatus", title: "借閱狀態", width: "15%" },
+                { field: "BookKeeper", title: "借閱人", width: "15%" },
+                { command: { text: "借閱紀錄", click: showRecord }, title: " ", width: "120px" },
+                { command: { text: "編輯", click: editBook }, title: " ", width: "120px" },
+                { command: { text: "刪除", click: deleteBook }, title: " ", width: "120px" },
+            ]
+
+
+        });
+    });
+    $("#clearInput").click(function (e) {
+        e.preventDefault();
+        $("#book_name").val("");
+        $("#book_category_id").data("kendoDropDownList").value("");
+        $("#book_keeper").data("kendoDropDownList").value("");
+        $("#book_status").data("kendoDropDownList").value("");
+    });
+</script>
+
